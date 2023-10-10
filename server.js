@@ -2,6 +2,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+require('dotenv').config();
+
 
 // require route files
 const exampleRoutes = require('./app/routes/example_routes')
@@ -27,8 +29,9 @@ const clientDevPort = 3000
 // establish database connection
 // use new version of URL parser
 // use createIndex instead of deprecated ensureIndex
-mongoose.connect(db, {
+mongoose.connect(process.env.MONGODB_URI, {
 	useNewUrlParser: true,
+	useUnifiedTopology: true,
 })
 
 // instantiate express application object
