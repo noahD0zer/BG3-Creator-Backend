@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport')
+const requireToken = passport.authenticate('bearer', { session: false })
 const Background = require('../models/background');
 const Class = require('../models/class');
 const Race = require('../models/race');
 const Proficiency = require('../models/proficiency');
+const Character = require('../models/character');
 
 
 
@@ -48,6 +51,28 @@ router.get('/proficiencies', async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+// CREATE
+// POST /characters
+router.post('/characters', requireToken, (req, res, next) => {
+    const newCharacter = new Character({
+      name: req.body.name,
+      background: req.body.background,
+      race: req.body.race,
+      characterClass: req.body.characterClass,
+      weaponProficiencies: req.body.weaponProficiencies,
+      armorProficiencies: req.body.armorProficiencies,
+      skillProficiencies: req.body.skillProficiencies,
+      owner: req.user._id,
+    });
   
+    newCharacter.save()
+      .then((savedCharacter) => {
+        res.status(201).json(savedCharacter);
+      })
+      .catch((error) => {
+        next(error);
+      });
+  });
 
 module.exports = router;

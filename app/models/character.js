@@ -5,11 +5,6 @@ const charSchema = new mongoose.Schema(
 	{
 		name: {
 			type: String,
-			required: true,
-		},
-		level: {
-			type: String,
-			required: true,
 		},
 		background: {
 			type: String,
@@ -19,14 +14,13 @@ const charSchema = new mongoose.Schema(
 			type: String,
 
 		},
-        class: {
+        characterClass: {
 			type: String,
 
 		},
-        proficiencies: [{
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Proficiency'
-		}],
+        weaponProficiencies: [String],
+		armorProficiencies: [String],
+		skillProficiencies: [String],
 		owner: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User'
@@ -38,6 +32,8 @@ const charSchema = new mongoose.Schema(
 		toJSON: { virtuals: true }
 	}
 )
+
+module.exports = mongoose.model('Character', charSchema);
 
 // we define virtuals outside of the model
 
