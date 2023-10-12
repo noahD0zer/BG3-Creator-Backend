@@ -1,4 +1,3 @@
-// In your BG3-Creator-Backend project
 const mongoose = require('mongoose');
 
 const raceSchema = new mongoose.Schema({
