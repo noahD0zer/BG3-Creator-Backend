@@ -59,26 +59,14 @@ router.get('/proficiencies', async (req, res) => {
 // CREATE
 // POST /characters
 router.post('/characters', requireToken, (req, res, next) => {
-    console.log('Received character creation request:', req.body);
-    const newCharacter = new Character({
-      name: req.body.name,
-      background: req.body.background,
-      race: req.body.race,
-      characterClass: req.body.characterClass,
-      weaponProficiencies: req.body.weaponProficiencies,
-      armorProficiencies: req.body.armorProficiencies,
-      skillProficiencies: req.body.skillProficiencies,
-      owner: req.user._id,
-    });
-  
-    console.log('Character object before saving:', newCharacter);
-    newCharacter.save()
-      .then((savedCharacter) => {
-        res.status(201).json(savedCharacter);
-      })
-      .catch((error) => {
-        next(error);
-      });
+  console.log('this is req.body.character', req.body.character)
+	req.body.character.owner = req.user.id
+
+	Character.create(req.body.character)
+		.then((char) => {
+			res.status(201).json({ character: char.toObject() })
+		})
+		.catch(next)
 });
 
 // INDEX - User Specific
