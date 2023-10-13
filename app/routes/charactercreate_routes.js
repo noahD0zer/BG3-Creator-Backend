@@ -55,6 +55,7 @@ router.get('/proficiencies', async (req, res) => {
 // CREATE
 // POST /characters
 router.post('/characters', requireToken, (req, res, next) => {
+    console.log('Received character creation request:', req.body);
     const newCharacter = new Character({
       name: req.body.name,
       background: req.body.background,
@@ -66,6 +67,7 @@ router.post('/characters', requireToken, (req, res, next) => {
       owner: req.user._id,
     });
   
+    console.log('Character object before saving:', newCharacter);
     newCharacter.save()
       .then((savedCharacter) => {
         res.status(201).json(savedCharacter);
@@ -73,6 +75,34 @@ router.post('/characters', requireToken, (req, res, next) => {
       .catch((error) => {
         next(error);
       });
-  });
+});
 
+// INDEX - User Specific
+// GET /characters/mine
+router.get('/characters/mine', requireToken, (req, res, next) => {
+    Character.find({ owner: req.user._id })
+      .then((characters) => {
+        if (!characters) {
+          return res.status(404).json({ message: 'No characters found for the current user' });
+        }
+        return characters.map((character) => character.toObject());
+      })
+      // Respond with status 200 and JSON of the characters
+      .then((characters) => res.status(200).json({ characters: characters }))
+      // If an error occurs, pass it to the handler
+      .catch(next);
+});
+// SHOW
+// GET /characters/:id
+router.get('/characters/:id', (req, res, next) => {
+    // req.params.id will be set based on the `:id` in the route
+    Character.findById(req.params.id)
+      .populate('owner') // Populate owner field if needed
+      .then(handle404)
+      .then((character) => res.status(200).json({ character: character.toObject() }))
+      // If an error occurs, pass it to the error handler
+      .catch(next);
+  });
+  
+  
 module.exports = router;
