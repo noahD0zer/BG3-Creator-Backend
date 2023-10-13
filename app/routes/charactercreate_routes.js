@@ -8,6 +8,10 @@ const Race = require('../models/race');
 const Proficiency = require('../models/proficiency');
 const Character = require('../models/character');
 
+const removeBlanks = require('../../lib/remove_blank_fields')
+const customErrors = require('../../lib/custom_errors')
+const handle404 = customErrors.handle404
+
 
 
 
@@ -92,6 +96,7 @@ router.get('/characters/mine', requireToken, (req, res, next) => {
       // If an error occurs, pass it to the handler
       .catch(next);
 });
+
 // SHOW
 // GET /characters/:id
 router.get('/characters/:id', (req, res, next) => {
@@ -102,7 +107,50 @@ router.get('/characters/:id', (req, res, next) => {
       .then((character) => res.status(200).json({ character: character.toObject() }))
       // If an error occurs, pass it to the error handler
       .catch(next);
-  });
+});
+
+// UPDATE
+// PATCH /characters/:id
+router.patch('/characters/:id', requireToken, removeBlanks, (req, res, next) => {
+    // Remove the `owner` property from the request body to prevent unauthorized changes
+    delete req.body.character.owner;
+  
+    // Find the character by its ID
+    Character.findById(req.params.id)
+      .then(handle404)
+      .then((character) => {
+        // Ensure that the current user is the owner of the character
+        requireOwnership(req, character);
+  
+        // Update the character with the data from the request body
+        return character.updateOne(req.body.character);
+      })
+      .then(() => {
+        // If the update succeeded, return a 204 status (No Content)
+        res.sendStatus(204);
+      })
+      .catch(next); // Pass any errors to the error handler
+});
+  
+// DESTROY
+// DELETE /characters/:id
+router.delete('/characters/:id', requireToken, (req, res, next) => {
+    // Find the character by its ID
+    Character.findById(req.params.id)
+      .then(handle404)
+      .then((character) => {
+        // Ensure that the current user is the owner of the character
+        requireOwnership(req, character);
+        
+        // Delete the character from the database
+        return character.deleteOne();
+      })
+      .then(() => {
+        // If the deletion succeeded, respond with a 204 status (No Content)
+        res.sendStatus(204);
+      })
+      .catch(next); // Pass any errors to the error handler
+});
   
   
 module.exports = router;
